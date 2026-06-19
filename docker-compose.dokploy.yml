@@ -7,6 +7,5 @@
 
 include:
   - rustdesk/docker-compose.dokploy.yml
-  # - vaultwarden/docker-compose.dokploy.yml
+  - vaultwarden/docker-compose.dokploy.yml   # TLS даёт Traefik, Caddy не нужен
   # - ntfy/docker-compose.dokploy.yml
-  # - caddy/docker-compose.dokploy.yml
