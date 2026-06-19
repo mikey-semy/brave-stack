@@ -78,6 +78,16 @@ docker exec -e NTFY_PASSWORD='ПАРОЛЬ' ntfy ntfy user add --role=admin mike
 ```
 Проверка: `curl -u mike:ПАРОЛЬ -d test https://NTFY_DOMAIN/test`.
 
+## 4c. Uptime Kuma (мониторинг, тоже за Caddy)
+A-запись `KUMA_DOMAIN → IP`, в `.env` задать `KUMA_DOMAIN`. Caddyfile содержит блок kuma.
+```bash
+cd /root/brave-stack
+cd uptime-kuma && docker compose --env-file /root/brave-stack/.env up -d && cd ..
+cd caddy && docker compose --env-file /root/brave-stack/.env up -d && cd ..
+```
+Дальше в веб-UI (`https://KUMA_DOMAIN`): создать админа, добавить ntfy-уведомление
+и мониторы на сервисы. См. uptime-kuma/README.md.
+
 ## 5. Бэкапы (off-site, Selectel S3 / любой S3 / B2)
 ```bash
 cd /root/brave-stack/backup
@@ -87,7 +97,7 @@ bash setup-backup.sh   # rclone remote + проверка бакета + cron 03
 ```
 `BACKUP_PATHS` — все data-каталоги с ценным:
 ```
-BACKUP_PATHS="/root/brave-stack/rustdesk/data /root/brave-stack/vaultwarden/data /root/brave-stack/ntfy/data"
+BACKUP_PATHS="/root/brave-stack/rustdesk/data /root/brave-stack/vaultwarden/data /root/brave-stack/ntfy/data /root/brave-stack/uptime-kuma/data"
 ```
 Selectel: `PROVIDER=s3`, `S3_ENDPOINT=https://s3.ru-3.storage.selcloud.ru`, регион `ru-3`,
 бакет с точкой (`brave.data`) → скрипт включает `force_path_style` автоматически.
