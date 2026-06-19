@@ -1,0 +1,27 @@
+# Vaultwarden для Dokploy: TLS даёт встроенный Traefik (не Caddy),
+# сервис подключается к dokploy-network с метками маршрутизации.
+# Домен и токены — во вкладке Environment в Dokploy.
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      - DOMAIN=https://${VW_DOMAIN}
+      - SIGNUPS_ALLOWED=${VW_SIGNUPS_ALLOWED:-false}
+      - ADMIN_TOKEN=${VW_ADMIN_TOKEN:-}
+    volumes:
+      - ./data:/data
+    networks:
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.vaultwarden.rule=Host(`${VW_DOMAIN}`)
+      - traefik.http.routers.vaultwarden.entrypoints=websecure
+      - traefik.http.routers.vaultwarden.tls.certresolver=letsencrypt
+      - traefik.http.services.vaultwarden.loadbalancer.server.port=80
+
+networks:
+  dokploy-network:
+    external: true

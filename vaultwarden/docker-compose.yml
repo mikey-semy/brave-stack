@@ -1,0 +1,27 @@
+# Vaultwarden — self-hosted сервер Bitwarden. Наружу НЕ публикуется,
+# доступен только через Caddy (TLS) по внутренней сети brave-web.
+#
+# Требует общую сеть (один раз):  docker network create brave-web
+# DOMAIN, SIGNUPS_ALLOWED и пр. — в корневом .env.
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      # Полный https-URL — Vaultwarden строит по нему ссылки и проверяет origin
+      - DOMAIN=https://${VW_DOMAIN}
+      # Регистрация. Включи на время создания своего аккаунта, потом выключи и передеплой.
+      - SIGNUPS_ALLOWED=${VW_SIGNUPS_ALLOWED:-false}
+      # Токен админ-панели (/admin). Пусто = панель выключена.
+      - ADMIN_TOKEN=${VW_ADMIN_TOKEN:-}
+    volumes:
+      - ./data:/data        # сейф, вложения, ключи, БД — БЭКАПИТЬ (зашифровано GPG)
+    networks:
+      - web
+
+networks:
+  web:
+    name: brave-web
+    external: true

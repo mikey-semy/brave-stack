@@ -1,0 +1,30 @@
+# Caddy — общий reverse-proxy + автоматический TLS (Let's Encrypt) для всех
+# веб-сервисов сборки (vaultwarden, ntfy, ...). Слушает 80/443 на хосте.
+# Сервисы за ним общаются по внутренней сети brave-web и наружу не публикуются.
+#
+# Перед первым запуском один раз создать общую сеть:
+#   docker network create brave-web
+#
+# RustDesk сюда НЕ заведён — он на host-сети со своими портами, Caddy ему не нужен.
+
+services:
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - VW_DOMAIN=${VW_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./data:/data        # сертификаты Let's Encrypt (бэкапить не нужно — перевыпустятся)
+      - ./config:/config
+    networks:
+      - web
+
+networks:
+  web:
+    name: brave-web
+    external: true
