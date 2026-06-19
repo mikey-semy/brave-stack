@@ -49,8 +49,9 @@ else
   exit 1
 fi
 
-# 4. cron: ежедневно в 03:00 (надёжно даже при пустом crontab)
-CRON_LINE="0 3 * * * ${DIR}/backup.sh >> /var/log/brave-backup.log 2>&1"
+# 4. cron: расписание из BACKUP_CRON (по умолч. 03:00). ВРЕМЯ В TZ СЕРВЕРА!
+# Сервер в UTC → "0 5 * * *" = 08:00 МСК. Надёжно даже при пустом crontab.
+CRON_LINE="${BACKUP_CRON:-0 3 * * *} ${DIR}/backup.sh >> /var/log/brave-backup.log 2>&1"
 EXISTING="$(crontab -l 2>/dev/null | grep -vF "${DIR}/backup.sh" || true)"
 { [ -n "$EXISTING" ] && printf '%s\n' "$EXISTING"; printf '%s\n' "$CRON_LINE"; } | crontab -
 echo "[+] cron установлен: ежедневно 03:00 (лог: /var/log/brave-backup.log)"
