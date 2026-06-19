@@ -9,3 +9,4 @@ include:
   - caddy/docker-compose.yml        # reverse-proxy + TLS (нужна сеть brave-web)
   - vaultwarden/docker-compose.yml  # менеджер паролей (за Caddy)
   - ntfy/docker-compose.yml         # пуш-уведомления (за Caddy)
+  - uptime-kuma/docker-compose.yml  # мониторинг (за Caddy)

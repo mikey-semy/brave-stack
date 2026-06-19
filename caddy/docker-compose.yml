@@ -18,6 +18,7 @@ services:
     environment:
       - VW_DOMAIN=${VW_DOMAIN}
       - NTFY_DOMAIN=${NTFY_DOMAIN}
+      - KUMA_DOMAIN=${KUMA_DOMAIN}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./data:/data        # сертификаты Let's Encrypt (бэкапить не нужно — перевыпустятся)
