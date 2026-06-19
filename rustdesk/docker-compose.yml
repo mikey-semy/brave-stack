@@ -1,0 +1,49 @@
+services:
+  # hbbr — Relay server. Поднимаем первым, hbbs от него зависит.
+  hbbr:
+    container_name: hbbr
+    image: rustdesk/rustdesk-server:latest
+    command: hbbr -k _
+    volumes:
+      - ./data:/root
+    network_mode: host
+    restart: unless-stopped
+    # Если host-режим недоступен (не Linux / Docker Desktop) — убери network_mode
+    # и раскомментируй ports ниже:
+    # ports:
+    #   - "21117:21117"   # relay
+    #   - "21119:21119"   # relay для web-клиента
+
+  # hbbs — ID / Rendezvous server (брокер соединений, NAT, heartbeat).
+  hbbs:
+    container_name: hbbs
+    image: rustdesk/rustdesk-server:latest
+    # -r говорит клиентам, через какой relay идти при фолбэке с P2P.
+    # -k _ автогенерит ключ-пару и ТРЕБУЕТ шифрование/ключ при подключении.
+    command: hbbs -r ${RELAY_HOST}:21117 -k _
+    volumes:
+      - ./data:/root
+    network_mode: host
+    depends_on:
+      - hbbr
+    restart: unless-stopped
+    # ports:
+    #   - "21115:21115"        # тест типа NAT
+    #   - "21116:21116"        # TCP hole punching / соединение
+    #   - "21116:21116/udp"    # регистрация ID + heartbeat (ОБЯЗАТЕЛЬНО udp)
+    #   - "21118:21118"        # поддержка web-клиента
+
+  # init — одноразовый шаг. Отрабатывает сам при каждом деплое (docker compose up):
+  # ждёт генерацию ключа и печатает ID/Relay/Key в лог (видно в Dokploy). Затем выходит.
+  init:
+    container_name: rustdesk-init
+    image: alpine:3
+    entrypoint: ["/bin/sh", "/init.sh"]
+    environment:
+      - RELAY_HOST=${RELAY_HOST}
+    volumes:
+      - ./data:/data:ro
+      - ./init.sh:/init.sh:ro
+    depends_on:
+      - hbbs
+    restart: "no"
