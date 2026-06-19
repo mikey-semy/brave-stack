@@ -1,0 +1,5 @@
+# Скрипты и конфиги исполняются на Linux — всегда LF, иначе CRLF ломает shebang.
+*.sh    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+.env.example text eol=lf

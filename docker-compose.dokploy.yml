@@ -1,0 +1,53 @@
+# Вариант для Dokploy (тип сервиса «Docker Compose»).
+#
+# Отличия от основного docker-compose.yml:
+#   * вместо network_mode: host — явный проброс портов (Dokploy так предсказуемее);
+#   * сервисы подключены к внешней сети dokploy-network.
+#
+# RELAY_HOST задаётся в Dokploy → вкладка Environment (а не в .env-файле):
+#   RELAY_HOST=твой_публичный_IP_или_домен
+#
+# ВАЖНО про сеть:
+#   - Деплой на ТОТ ЖЕ сервер, где живёт Dokploy → dokploy-network уже существует,
+#     оставляй блоки networks как есть.
+#   - Деплой на ОТДЕЛЬНЫЙ удалённый сервер (без Dokploy на нём) → сети там нет.
+#     Тогда либо удали все упоминания networks/dokploy-network ниже,
+#     либо просто используй основной docker-compose.yml (host-режим).
+#
+# Порты RustDesk идут «сырым» TCP/UDP — Traefik их не проксирует,
+# поэтому они проброшены напрямую. Открой их в firewall сервера.
+
+services:
+  hbbr:
+    container_name: hbbr
+    image: rustdesk/rustdesk-server:latest
+    command: hbbr -k _
+    volumes:
+      - ./data:/root
+    ports:
+      - "21117:21117"   # relay
+      - "21119:21119"   # relay для web-клиента
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
+  hbbs:
+    container_name: hbbs
+    image: rustdesk/rustdesk-server:latest
+    command: hbbs -r ${RELAY_HOST}:21117 -k _
+    volumes:
+      - ./data:/root
+    ports:
+      - "21115:21115"        # тест типа NAT
+      - "21116:21116"        # TCP hole punching / соединение
+      - "21116:21116/udp"    # регистрация ID + heartbeat (обязательно udp!)
+      - "21118:21118"        # поддержка web-клиента
+    networks:
+      - dokploy-network
+    depends_on:
+      - hbbr
+    restart: unless-stopped
+
+networks:
+  dokploy-network:
+    external: true

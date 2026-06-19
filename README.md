@@ -10,9 +10,11 @@ Self-hosted remote desktop на базе [RustDesk](https://github.com/rustdesk/
 
 | Файл | Назначение |
 |------|-----------|
-| [docker-compose.yml](docker-compose.yml) | Два сервиса: `hbbs` (брокер) + `hbbr` (relay) |
+| [deploy.sh](deploy.sh) | **Автодеплой «под ключ»**: ставит Docker, firewall, поднимает всё, печатает ключ |
+| [docker-compose.yml](docker-compose.yml) | Два сервиса: `hbbs` (брокер) + `hbbr` (relay), host-режим |
+| [docker-compose.dokploy.yml](docker-compose.dokploy.yml) | Вариант для Dokploy: проброс портов + `dokploy-network` |
 | [.env.example](.env.example) | Шаблон конфига — сюда вписываешь IP/домен VPS |
-| [DEPLOY.md](DEPLOY.md) | Пошаговый деплой сервера, firewall, выдача ключа |
+| [DEPLOY.md](DEPLOY.md) | Пошаговый ручной деплой, firewall, выдача ключа |
 | [.gitignore](.gitignore) | Исключает секреты (`data/`, `.env`) из git |
 
 ## Архитектура
@@ -33,12 +35,25 @@ Self-hosted remote desktop на базе [RustDesk](https://github.com/rustdesk/
 - **hbbs** — регистрирует устройства, тестирует NAT, сводит клиентов. Лёгкий, работает всегда.
 - **hbbr** — проксирует видеопоток, **только** когда прямой P2P не удался. Основной потребитель трафика.
 
-## Быстрый старт
+## Быстрый старт (автодеплой)
+
+Один скрипт делает всё: ставит Docker, открывает порты, поднимает сервисы
+и печатает готовые параметры для клиентов.
 
 ```bash
-# на Linux VPS
+# на Linux-сервере
 git clone https://github.com/mikey-semy/remote-app.git
 cd remote-app
+sudo ./deploy.sh                 # RELAY_HOST определится по публичному IP
+# или явно:
+sudo ./deploy.sh my.domain.com
+```
+
+В конце скрипт выведет `ID Server`, `Relay` и `Key` — это всё, что нужно вбить в клиентах.
+
+### Ручной запуск (без скрипта)
+
+```bash
 cp .env.example .env && nano .env      # впиши RELAY_HOST = IP/домен VPS
 ufw allow 21115:21119/tcp && ufw allow 21116/udp && ufw reload
 docker compose up -d
@@ -46,6 +61,23 @@ cat data/id_ed25519.pub                # публичный ключ для кл
 ```
 
 Подробности, troubleshooting и обслуживание — в [DEPLOY.md](DEPLOY.md).
+
+## Деплой через Dokploy
+
+Используй [docker-compose.dokploy.yml](docker-compose.dokploy.yml) (тип сервиса
+**Docker Compose**). Отличия от основного compose: проброс портов вместо
+host-режима и подключение к `dokploy-network`.
+
+1. Создай в Dokploy сервис типа **Docker Compose**, укажи этот репозиторий
+   и путь к `docker-compose.dokploy.yml`.
+2. Во вкладке **Environment** задай `RELAY_HOST=<IP/домен сервера>`.
+3. Открой на сервере порты **21115–21119/tcp** и **21116/udp**.
+4. Деплой. Ключ забери после старта:
+   `docker exec hbbs cat /root/id_ed25519.pub` (или через файловый браузер Dokploy).
+
+> **Удалённый сервер без Dokploy на борту** (как у тебя): сети `dokploy-network`
+> там нет. Либо убери блоки `networks`/`dokploy-network` из compose, либо просто
+> возьми основной `docker-compose.yml` (host-режим) — он самодостаточен.
 
 ## Клиенты
 
