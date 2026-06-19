@@ -10,9 +10,10 @@ Self-hosted remote desktop на базе [RustDesk](https://github.com/rustdesk/
 
 | Файл | Назначение |
 |------|-----------|
-| [deploy.sh](deploy.sh) | **Автодеплой «под ключ»**: ставит Docker, firewall, поднимает всё, печатает ключ |
-| [docker-compose.yml](docker-compose.yml) | Два сервиса: `hbbs` (брокер) + `hbbr` (relay), host-режим |
+| [docker-compose.yml](docker-compose.yml) | Сервисы `hbbs` + `hbbr` + одноразовый `init`, host-режим |
 | [docker-compose.dokploy.yml](docker-compose.dokploy.yml) | Вариант для Dokploy: проброс портов + `dokploy-network` |
+| [init.sh](init.sh) | Init-шаг: при деплое сам печатает `ID/Relay/Key` в лог |
+| [deploy.sh](deploy.sh) | Деплой на «голый» сервер без Dokploy (ставит Docker, firewall, поднимает всё) |
 | [.env.example](.env.example) | Шаблон конфига — сюда вписываешь IP/домен VPS |
 | [DEPLOY.md](DEPLOY.md) | Пошаговый ручной деплой, firewall, выдача ключа |
 | [.gitignore](.gitignore) | Исключает секреты (`data/`, `.env`) из git |
@@ -35,49 +36,63 @@ Self-hosted remote desktop на базе [RustDesk](https://github.com/rustdesk/
 - **hbbs** — регистрирует устройства, тестирует NAT, сводит клиентов. Лёгкий, работает всегда.
 - **hbbr** — проксирует видеопоток, **только** когда прямой P2P не удался. Основной потребитель трафика.
 
-## Быстрый старт (автодеплой)
+## Как деплоить
 
-Один скрипт делает всё: ставит Docker, открывает порты, поднимает сервисы
-и печатает готовые параметры для клиентов.
+- **Через Dokploy** (основной путь) — нажимаешь Deploy, всё поднимается само,
+  ключ появляется в логах. См. [раздел ниже](#деплой-через-dokploy).
+- **На «голый» сервер без Dokploy** — одной командой через [deploy.sh](deploy.sh):
 
-```bash
-# на Linux-сервере
-git clone https://github.com/mikey-semy/remote-app.git
-cd remote-app
-sudo ./deploy.sh                 # RELAY_HOST определится по публичному IP
-# или явно:
-sudo ./deploy.sh my.domain.com
-```
+  ```bash
+  git clone https://github.com/mikey-semy/remote-app.git
+  cd remote-app
+  sudo ./deploy.sh                 # RELAY_HOST определится по публичному IP
+  # или явно: sudo ./deploy.sh my.domain.com
+  ```
 
-В конце скрипт выведет `ID Server`, `Relay` и `Key` — это всё, что нужно вбить в клиентах.
+  Скрипт ставит Docker, открывает firewall, поднимает сервисы и в конце печатает
+  `ID Server` / `Relay` / `Key`.
 
-### Ручной запуск (без скрипта)
+- **Вручную** (если хочется по шагам):
 
-```bash
-cp .env.example .env && nano .env      # впиши RELAY_HOST = IP/домен VPS
-ufw allow 21115:21119/tcp && ufw allow 21116/udp && ufw reload
-docker compose up -d
-cat data/id_ed25519.pub                # публичный ключ для клиентов
-```
+  ```bash
+  cp .env.example .env && nano .env      # впиши RELAY_HOST = IP/домен VPS
+  ufw allow 21115:21119/tcp && ufw allow 21116/udp && ufw reload
+  docker compose up -d
+  cat data/id_ed25519.pub                # публичный ключ для клиентов
+  ```
 
 Подробности, troubleshooting и обслуживание — в [DEPLOY.md](DEPLOY.md).
 
 ## Деплой через Dokploy
 
-Используй [docker-compose.dokploy.yml](docker-compose.dokploy.yml) (тип сервиса
-**Docker Compose**). Отличия от основного compose: проброс портов вместо
-host-режима и подключение к `dokploy-network`.
+Ничего вручную запускать не нужно — всё поднимается само при нажатии **Deploy**.
+В compose есть одноразовый сервис `init` ([init.sh](init.sh)): при каждом деплое
+он дожидается генерации ключа и **печатает готовые `ID Server` / `Relay` / `Key`
+прямо в логи** (контейнер `rustdesk-init`). Вручную лезть за ключом не надо.
 
-1. Создай в Dokploy сервис типа **Docker Compose**, укажи этот репозиторий
-   и путь к `docker-compose.dokploy.yml`.
+1. Создай в Dokploy сервис типа **Docker Compose**, укажи этот репозиторий.
+   Файл compose: `docker-compose.yml` (host-режим) — он самодостаточен.
 2. Во вкладке **Environment** задай `RELAY_HOST=<IP/домен сервера>`.
-3. Открой на сервере порты **21115–21119/tcp** и **21116/udp**.
-4. Деплой. Ключ забери после старта:
-   `docker exec hbbs cat /root/id_ed25519.pub` (или через файловый браузер Dokploy).
+3. Открой на сервере порты **21115–21119/tcp** и **21116/udp** — это
+   **разовая** настройка хоста (см. ниже), не на каждый деплой.
+4. Нажми **Deploy**. После старта открой логи `rustdesk-init` — там готовые
+   параметры для клиентов.
 
-> **Удалённый сервер без Dokploy на борту** (как у тебя): сети `dokploy-network`
-> там нет. Либо убери блоки `networks`/`dokploy-network` из compose, либо просто
-> возьми основной `docker-compose.yml` (host-режим) — он самодостаточен.
+> Сеть `dokploy-network` нужна, только если деплоишь на тот же сервер, где сам
+> Dokploy. На отдельном удалённом сервере используется `docker-compose.yml`
+> (host-режим, без внешней сети). Файл `docker-compose.dokploy.yml` — про запас.
+
+### Firewall — один раз на сервере
+
+Открытие портов — разовая операция уровня хоста (контейнеру лезть в firewall
+хоста неправильно), поэтому в compose её нет. Сделай один раз по SSH:
+
+```bash
+ufw allow 21115:21119/tcp && ufw allow 21116/udp && ufw reload
+```
+
+Если на сервере нет `ufw` — открой те же порты в панели провайдера. Дальше
+деплои в Dokploy идут уже без всякого SSH.
 
 ## Клиенты
 

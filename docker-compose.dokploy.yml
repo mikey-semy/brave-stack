@@ -48,6 +48,23 @@ services:
       - hbbr
     restart: unless-stopped
 
+  # init — одноразовый шаг: ждёт генерацию ключа и печатает ID/Relay/Key в лог.
+  # Отрабатывает сам при каждом деплое. Затем выходит.
+  init:
+    container_name: rustdesk-init
+    image: alpine:3
+    entrypoint: ["/bin/sh", "/init.sh"]
+    environment:
+      - RELAY_HOST=${RELAY_HOST}
+    volumes:
+      - ./data:/data:ro
+      - ./init.sh:/init.sh:ro
+    networks:
+      - dokploy-network
+    depends_on:
+      - hbbs
+    restart: "no"
+
 networks:
   dokploy-network:
     external: true
