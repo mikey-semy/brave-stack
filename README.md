@@ -48,10 +48,13 @@ docker compose up -d                   # поднимет все сервисы 
 
 ### Один сервис отдельно
 ```bash
-cd brave-stack
+cd brave-stack/rustdesk
 cp .env.example .env && nano .env
-docker compose -f rustdesk/docker-compose.yml up -d
+docker compose up -d
 ```
+> Запускай из папки сервиса — тогда подхватится его `.env`. (Из корня корневой
+> `.env` для одиночного `-f rustdesk/...` не подхватится — нужен `--env-file .env`.)
+
 Или см. README конкретного сервиса (напр. [rustdesk/README.md](rustdesk/README.md)
 с автодеплоем `deploy.sh`).
 
