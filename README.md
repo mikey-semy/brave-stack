@@ -15,7 +15,8 @@
 | [backup/](backup/) | Off-site бэкапы (S3/B2) + переезд (`RESTORE.md`) | ✅ работает |
 | [caddy/](caddy/) | общий reverse-proxy + авто-TLS (Let's Encrypt) | ✅ готово |
 | [vaultwarden/](vaultwarden/) | менеджер паролей (Bitwarden) | ✅ работает (vault.example.ru) |
-| [ntfy/](ntfy/) | пуш-уведомления | ✅ готово, нужен домен |
+| [ntfy/](ntfy/) | пуш-уведомления | ✅ работает (ntfy.example.ru) |
+| [uptime-kuma/](uptime-kuma/) | мониторинг доступности + алерты | ✅ готово, нужен домен |
 
 ## Структура
 

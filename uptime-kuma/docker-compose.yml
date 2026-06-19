@@ -1,0 +1,20 @@
+# Uptime Kuma — мониторинг доступности сервисов + алерты (в т.ч. ntfy).
+# Наружу не публикуется, доступ через Caddy (TLS). Слушает 3001 внутри.
+#
+# Требует общую сеть:  docker network create brave-web
+# KUMA_DOMAIN — в корневом .env. Мониторы и уведомления настраиваются в веб-UI.
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data      # настройки, мониторы, история — БЭКАПИТЬ
+    networks:
+      - web
+
+networks:
+  web:
+    name: brave-web
+    external: true
