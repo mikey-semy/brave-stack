@@ -29,9 +29,12 @@ case "${PROVIDER:-b2}" in
     ;;
   s3)
     : "${S3_ACCESS_KEY:?}"; : "${S3_SECRET_KEY:?}"; : "${S3_ENDPOINT:?}"
+    # force_path_style: имя бакета остаётся в пути, а не в hostname —
+    # обязательно для бакетов с точкой (напр. brave.data), иначе ломается TLS-SNI.
     rclone config create "$REMOTE_NAME" s3 provider Other \
       access_key_id "$S3_ACCESS_KEY" secret_access_key "$S3_SECRET_KEY" \
-      endpoint "$S3_ENDPOINT" region "${S3_REGION:-auto}" >/dev/null
+      endpoint "$S3_ENDPOINT" region "${S3_REGION:-auto}" \
+      force_path_style true >/dev/null
     ;;
   *) echo "[x] неизвестный PROVIDER: ${PROVIDER}"; exit 1 ;;
 esac
