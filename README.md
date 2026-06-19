@@ -63,10 +63,13 @@ docker compose up -d
 или `rustdesk/docker-compose.dokploy.yml` (один сервис). `RELAY_HOST` и прочее —
 во вкладке **Environment**.
 
-## Бэкапы и переезд
+## Поднятие с нуля и переезд
+
+- **[RUNBOOK.md](RUNBOOK.md)** — полный порядок развёртывания всей сборки на чистом
+  сервере, включая ручные шаги (пакеты, сеть, env, TLS, бэкапы) и грабли.
+- **[backup/RESTORE.md](backup/RESTORE.md)** — восстановление данных из off-site бэкапов.
 
 Сервер временный → всё ценное уезжает off-site в S3/B2, инфра — в этом репо.
-Настройка и восстановление: [backup/RESTORE.md](backup/RESTORE.md).
 
 ## Текущий деплой
 
