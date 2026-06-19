@@ -20,7 +20,16 @@ STAMP="$(date +%Y%m%d-%H%M%S)"
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 ARCHIVE="$TMP/${HOST}-${STAMP}.tar.gz"
 
-notify() { [ -n "${NTFY_URL:-}" ] && curl -fsS -m 10 -d "$1" "$NTFY_URL" >/dev/null 2>&1 || true; }
+notify() {
+  [ -z "${NTFY_URL:-}" ] && return 0
+  # NTFY_TOKEN нужен для приватного ntfy (deny-all); без него — анонимно
+  if [ -n "${NTFY_TOKEN:-}" ]; then
+    curl -fsS -m 10 -H "Authorization: Bearer ${NTFY_TOKEN}" -H "Title: brave-stack backup" \
+      -d "$1" "$NTFY_URL" >/dev/null 2>&1 || true
+  else
+    curl -fsS -m 10 -H "Title: brave-stack backup" -d "$1" "$NTFY_URL" >/dev/null 2>&1 || true
+  fi
+}
 fail()   { echo "[x] $1" >&2; notify "❌ backup ${HOST}: $1"; exit 1; }
 
 echo "[*] архивирую: $BACKUP_PATHS"
