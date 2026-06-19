@@ -17,6 +17,7 @@ services:
       - "443:443"
     environment:
       - VW_DOMAIN=${VW_DOMAIN}
+      - NTFY_DOMAIN=${NTFY_DOMAIN}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./data:/data        # сертификаты Let's Encrypt (бэкапить не нужно — перевыпустятся)

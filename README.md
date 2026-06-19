@@ -14,8 +14,8 @@
 | [rustdesk/](rustdesk/) | RustDesk (hbbs+hbbr) — self-hosted удалёнка, аналог AnyDesk | ✅ работает |
 | [backup/](backup/) | Off-site бэкапы (S3/B2) + переезд (`RESTORE.md`) | ✅ работает |
 | [caddy/](caddy/) | общий reverse-proxy + авто-TLS (Let's Encrypt) | ✅ готово |
-| [vaultwarden/](vaultwarden/) | менеджер паролей (Bitwarden) | ✅ готово, нужен домен |
-| `ntfy/` | пуш-уведомления | 🔜 планируется |
+| [vaultwarden/](vaultwarden/) | менеджер паролей (Bitwarden) | ✅ работает (brave.equiply.ru) |
+| [ntfy/](ntfy/) | пуш-уведомления | ✅ готово, нужен домен |
 
 ## Структура
 

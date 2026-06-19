@@ -1,0 +1,33 @@
+# ntfy для Dokploy: TLS даёт Traefik, сервис на dokploy-network с метками.
+# NTFY_DOMAIN — во вкладке Environment.
+
+services:
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    container_name: ntfy
+    command: serve
+    restart: unless-stopped
+    environment:
+      - NTFY_BASE_URL=https://${NTFY_DOMAIN}
+      - NTFY_LISTEN_HTTP=:80
+      - NTFY_BEHIND_PROXY=true
+      - NTFY_UPSTREAM_BASE_URL=https://ntfy.sh
+      - NTFY_CACHE_FILE=/var/cache/ntfy/cache.db
+      - NTFY_AUTH_FILE=/var/lib/ntfy/user.db
+      - NTFY_AUTH_DEFAULT_ACCESS=deny-all
+      - NTFY_ATTACHMENT_CACHE_DIR=/var/cache/ntfy/attachments
+    volumes:
+      - ./data:/var/lib/ntfy
+      - ./cache:/var/cache/ntfy
+    networks:
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.ntfy.rule=Host(`${NTFY_DOMAIN}`)
+      - traefik.http.routers.ntfy.entrypoints=websecure
+      - traefik.http.routers.ntfy.tls.certresolver=letsencrypt
+      - traefik.http.services.ntfy.loadbalancer.server.port=80
+
+networks:
+  dokploy-network:
+    external: true
