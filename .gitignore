@@ -11,5 +11,8 @@ rustdesk/data/
 # Caddy runtime config (autosave)
 caddy/config/
 
+# ntfy кэш (эфемерный)
+ntfy/cache/
+
 # Конфиг бэкапов с ключами облака S3/B2
 backup/backup.env

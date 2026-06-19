@@ -8,4 +8,4 @@ include:
   - rustdesk/docker-compose.yml
   - caddy/docker-compose.yml        # reverse-proxy + TLS (нужна сеть brave-web)
   - vaultwarden/docker-compose.yml  # менеджер паролей (за Caddy)
-  # - ntfy/docker-compose.yml
+  - ntfy/docker-compose.yml         # пуш-уведомления (за Caddy)

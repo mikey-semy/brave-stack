@@ -1,0 +1,33 @@
+# ntfy — self-hosted пуш-уведомления. Наружу не публикуется, доступ через Caddy (TLS).
+# Конфигурируется переменными NTFY_* (без server.yml). Приватный: deny-all + пользователь.
+#
+# Требует общую сеть:  docker network create brave-web
+# NTFY_DOMAIN — в корневом .env.
+
+services:
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    container_name: ntfy
+    command: serve
+    restart: unless-stopped
+    environment:
+      - NTFY_BASE_URL=https://${NTFY_DOMAIN}
+      - NTFY_LISTEN_HTTP=:80
+      - NTFY_BEHIND_PROXY=true
+      # Мгновенные пуши на iOS идут через ntfy.sh как APNs-«будильник» (требование Apple)
+      - NTFY_UPSTREAM_BASE_URL=https://ntfy.sh
+      - NTFY_CACHE_FILE=/var/cache/ntfy/cache.db
+      - NTFY_AUTH_FILE=/var/lib/ntfy/user.db
+      # Приватный сервер: без логина ничего нельзя (создадим пользователя при деплое)
+      - NTFY_AUTH_DEFAULT_ACCESS=deny-all
+      - NTFY_ATTACHMENT_CACHE_DIR=/var/cache/ntfy/attachments
+    volumes:
+      - ./data:/var/lib/ntfy      # user.db — БЭКАПИТЬ
+      - ./cache:/var/cache/ntfy   # кэш сообщений/вложений — эфемерно
+    networks:
+      - web
+
+networks:
+  web:
+    name: brave-web
+    external: true
