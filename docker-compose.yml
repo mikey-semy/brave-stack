@@ -10,3 +10,4 @@ include:
   - vaultwarden/docker-compose.yml  # менеджер паролей (за Caddy)
   - ntfy/docker-compose.yml         # пуш-уведомления (за Caddy)
   - uptime-kuma/docker-compose.yml  # мониторинг (за Caddy)
+  - wallos/docker-compose.yml       # трекер подписок (за Caddy)

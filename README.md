@@ -16,7 +16,8 @@
 | [caddy/](caddy/) | общий reverse-proxy + авто-TLS (Let's Encrypt) | ✅ готово |
 | [vaultwarden/](vaultwarden/) | менеджер паролей (Bitwarden) | ✅ работает (vault.example.ru) |
 | [ntfy/](ntfy/) | пуш-уведомления | ✅ работает (ntfy.example.ru) |
-| [uptime-kuma/](uptime-kuma/) | мониторинг доступности + алерты | ✅ готово, нужен домен |
+| [uptime-kuma/](uptime-kuma/) | мониторинг доступности + алерты | ✅ работает (status.example.ru) |
+| [wallos/](wallos/) | трекер подписок (цены, продления, дашборд) | ✅ готово, нужен домен |
 
 ## Структура
 
