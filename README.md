@@ -16,7 +16,8 @@
 | [caddy/](caddy/) | общий reverse-proxy + авто-TLS (Let's Encrypt) | ✅ готово |
 | [vaultwarden/](vaultwarden/) | менеджер паролей (Bitwarden) | ✅ работает (brave.equiply.ru) |
 | [ntfy/](ntfy/) | пуш-уведомления | ✅ работает (ntfy.equiply.ru) |
-| [uptime-kuma/](uptime-kuma/) | мониторинг доступности + алерты | ✅ готово, нужен домен |
+| [uptime-kuma/](uptime-kuma/) | мониторинг доступности + алерты | ✅ работает (status.equiply.ru) |
+| [wallos/](wallos/) | трекер подписок (цены, продления, дашборд) | ✅ готово, нужен домен |
 
 ## Структура
 

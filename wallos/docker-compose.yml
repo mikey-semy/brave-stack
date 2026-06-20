@@ -1,0 +1,23 @@
+# Wallos — self-hosted трекер подписок (веб-UI, дашборд, ntfy-уведомления).
+# Наружу не публикуется, доступ через Caddy (TLS). Слушает 80 внутри.
+#
+# Требует общую сеть:  docker network create brave-web
+# WALLOS_DOMAIN — в корневом .env.
+
+services:
+  wallos:
+    image: bellamy/wallos:latest
+    container_name: wallos
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Moscow
+    volumes:
+      - ./data/db:/var/www/html/db        # SQLite — БЭКАПИТЬ
+      - ./data/logos:/var/www/html/logos  # загруженные логотипы
+    networks:
+      - web
+
+networks:
+  web:
+    name: brave-web
+    external: true

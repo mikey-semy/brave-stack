@@ -17,3 +17,7 @@
 {$KUMA_DOMAIN} {
 	reverse_proxy uptime-kuma:3001
 }
+
+{$WALLOS_DOMAIN} {
+	reverse_proxy wallos:80
+}
