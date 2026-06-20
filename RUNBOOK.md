@@ -121,6 +121,36 @@ crontab -l                                  # строка backup.sh 03:00
 
 ---
 
+## 7. Базовая безопасность
+```bash
+apt-get install -y ufw fail2ban
+# firewall: всё закрыто, кроме нужного. SSH РАЗРЕШИТЬ ПЕРВЫМ!
+ufw default deny incoming; ufw default allow outgoing
+ufw allow 22/tcp                              # SSH (иначе запрёшь себя!)
+ufw allow 80/tcp; ufw allow 443/tcp           # Caddy
+ufw allow 21115:21119/tcp; ufw allow 21116/udp # RustDesk
+# zabbix-агент хостера (если есть) — только с его IP (см. Server= в zabbix_agentd.conf):
+# ufw allow from <zbx_ip> to any port 10050 proto tcp
+ufw --force enable
+```
+> На проде включай с предохранителем (на случай ошибки в правилах):
+> `nohup bash -c 'sleep 180 && ufw --force disable' & ; ufw --force enable`
+> затем проверь НОВЫМ ssh-подключением и сними: `pkill -f 'ufw --force disable'`.
+
+fail2ban (защита SSH; Debian 13 — журнал systemd, не /var/log/auth.log):
+```bash
+cat > /etc/fail2ban/jail.d/sshd.local <<'J'
+[sshd]
+enabled = true
+backend = systemd
+maxretry = 5
+bantime = 1h
+J
+systemctl enable --now fail2ban
+```
+SSH — только по ключу (`PasswordAuthentication no` в sshd_config). Автообновления:
+`unattended-upgrades` + `/etc/apt/apt.conf.d/20auto-upgrades`.
+
 ## Состояние brave (важные отклонения от идеала)
 - Сервер развёрнут в каталоге **`/root/remote-app`** (старое имя), НЕ мигрирован на
   раскладку `brave-stack`. Поэтому реальные пути там:
