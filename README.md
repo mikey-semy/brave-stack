@@ -17,7 +17,7 @@
 | [vaultwarden/](vaultwarden/) | менеджер паролей (Bitwarden) | ✅ работает (vault.example.ru) |
 | [ntfy/](ntfy/) | пуш-уведомления | ✅ работает (ntfy.example.ru) |
 | [uptime-kuma/](uptime-kuma/) | мониторинг доступности + алерты | ✅ работает (status.example.ru) |
-| [wallos/](wallos/) | трекер подписок (цены, продления, дашборд) | ✅ готово, нужен домен |
+| [wallos/](wallos/) | трекер подписок (цены, продления, дашборд) | ✅ работает (subs.example.ru) |
 
 ## Структура
 
@@ -77,3 +77,7 @@ docker compose up -d
 
 Развёрнут на `brave` (203.0.113.10, `ssh brave`). Параметры RustDesk-клиентов и
 прочие детали — в [rustdesk/README.md](rustdesk/README.md).
+
+## Лицензия
+
+MIT — см. [LICENSE](LICENSE). Берите и пользуйтесь.
