@@ -14,10 +14,10 @@
 | [rustdesk/](rustdesk/) | RustDesk (hbbs+hbbr) — self-hosted удалёнка, аналог AnyDesk | ✅ работает |
 | [backup/](backup/) | Off-site бэкапы (S3/B2) + переезд (`RESTORE.md`) | ✅ работает |
 | [caddy/](caddy/) | общий reverse-proxy + авто-TLS (Let's Encrypt) | ✅ готово |
-| [vaultwarden/](vaultwarden/) | менеджер паролей (Bitwarden) | ✅ работает (vault.example.ru) |
-| [ntfy/](ntfy/) | пуш-уведомления | ✅ работает (ntfy.example.ru) |
-| [uptime-kuma/](uptime-kuma/) | мониторинг доступности + алерты | ✅ работает (status.example.ru) |
-| [wallos/](wallos/) | трекер подписок (цены, продления, дашборд) | ✅ работает (subs.example.ru) |
+| [vaultwarden/](vaultwarden/) | менеджер паролей (Bitwarden) | ✅ работает |
+| [ntfy/](ntfy/) | пуш-уведомления | ✅ работает |
+| [uptime-kuma/](uptime-kuma/) | мониторинг доступности + алерты | ✅ работает |
+| [wallos/](wallos/) | трекер подписок (цены, продления, дашборд) | ✅ работает |
 
 ## Структура
 
