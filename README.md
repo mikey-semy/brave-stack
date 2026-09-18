@@ -75,8 +75,13 @@ docker compose up -d
 
 ## Текущий деплой
 
-Развёрнут на `brave` (203.0.113.10, `ssh brave`). Параметры RustDesk-клиентов и
-прочие детали — в [rustdesk/README.md](rustdesk/README.md).
+Развёрнут на `brave` (203.0.113.10, `ssh brave`) — семь контейнеров, standalone,
+**без Dokploy**: файлы `docker-compose.dokploy.yml` лежат про запас и ни разу не
+применялись. Каталог на сервере — исторический `/root/brave-stack`, и конфиги там
+неотслеживаемые; подробности и порядок починки — в разделе «Состояние brave»
+[RUNBOOK.md](RUNBOOK.md).
+
+Параметры RustDesk-клиентов и прочие детали — в [rustdesk/README.md](rustdesk/README.md).
 
 ## Лицензия
 

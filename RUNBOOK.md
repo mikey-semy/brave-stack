@@ -11,7 +11,8 @@
 ## 0. Предпосылки
 - Linux-сервер (Debian/Ubuntu), root-доступ.
 - Открытые наружу порты: **21115–21119/tcp, 21116/udp** (RustDesk), **80, 443/tcp** (Caddy/TLS).
-  На brave фаервола (ufw) нет — порты открыты на уровне провайдера. Если есть ufw:
+  На brave ufw включён (см. §7): открыты 22, 80, 443, 21115–21119/tcp, 21116/udp
+  и 10050/tcp только с трёх адресов заббикса хостера. Если ufw ставится с нуля:
   `ufw allow 21115:21119/tcp && ufw allow 21116/udp && ufw allow 80,443/tcp`.
 - DNS: A-запись поддомена Vaultwarden → IP сервера (напр. `vault.example.ru → 203.0.113.10`).
   Если домен на Cloudflare — режим «DNS only» (серое облако), иначе ломается TLS-ALPN.
@@ -93,11 +94,11 @@ cd caddy && docker compose --env-file /root/brave-stack/.env up -d && cd ..
 cd /root/brave-stack/backup
 cp backup.env.example backup.env
 nano backup.env     # PROVIDER=s3, S3_*, RCLONE_REMOTE, BACKUP_PATHS (см. ниже), GPG_RECIPIENT
-bash setup-backup.sh   # rclone remote + проверка бакета + cron 03:00 + первый бэкап
+bash setup-backup.sh   # rclone remote + проверка бакета + cron + первый бэкап
 ```
 `BACKUP_PATHS` — все data-каталоги с ценным:
 ```
-BACKUP_PATHS="/root/brave-stack/rustdesk/data /root/brave-stack/vaultwarden/data /root/brave-stack/ntfy/data /root/brave-stack/uptime-kuma/data"
+BACKUP_PATHS="/root/brave-stack/rustdesk/data /root/brave-stack/vaultwarden/data /root/brave-stack/ntfy/data /root/brave-stack/uptime-kuma/data /root/brave-stack/wallos/data"
 ```
 Selectel: `PROVIDER=s3`, `S3_ENDPOINT=https://s3.ru-3.storage.selcloud.ru`, регион `ru-3`,
 бакет с точкой (`brave.data`) → скрипт включает `force_path_style` автоматически.
@@ -112,11 +113,19 @@ gpg --armor --export-secret-keys <key> > brave-backup-private.asc
 с сервера приватный ключ (оставить только публичный — им шифруется). Без приватного
 ключа восстановление невозможно (by design).
 
+> **Проверять надо обе стороны, и вот почему.** Ключ на сервере обесценивает
+> шифрование: кто получил root, тот прочитал все копии, включая сейф с паролями.
+> Но и единственная копия на одном диске — не хранение: потеряли диск, и бэкапы
+> нечитаемы навсегда. Правильное состояние: **на сервере только публичный ключ, а
+> приватный — минимум в двух местах, и ни одно из них не сервер и не машина,
+> которую он обслуживает.** Проверка: `gpg --list-secret-keys` на сервере должен
+> молчать.
+
 ## 6. Проверка
 ```bash
 docker ps                                   # hbbs, hbbr, caddy, vaultwarden — Up
 rclone lsl backup:<бакет>/brave             # копии в облаке с датами
-crontab -l                                  # строка backup.sh 03:00
+crontab -l                                  # строка backup.sh (на brave — 05:00)
 ```
 
 ---
@@ -152,12 +161,23 @@ SSH — только по ключу (`PasswordAuthentication no` в sshd_config
 `unattended-upgrades` + `/etc/apt/apt.conf.d/20auto-upgrades`.
 
 ## Состояние brave (важные отклонения от идеала)
+Сверено с живым сервером 18.09.2026.
+
 - Сервер развёрнут в каталоге **`/root/brave-stack`** (старое имя), НЕ мигрирован на
   раскладку `brave-stack`. Поэтому реальные пути там:
   - RustDesk данные: `/root/brave-stack/data` (а не `rustdesk/data`)
-  - Caddy/Vaultwarden: `/root/brave-stack/{caddy,vaultwarden}` (доставлены через scp)
-  - `BACKUP_PATHS=/root/brave-stack/data` (Vaultwarden ещё предстоит добавить)
+  - остальные сервисы: `/root/brave-stack/{caddy,vaultwarden,ntfy,uptime-kuma,wallos}`
+    (доставлены через scp)
   - env бэкапов: `/root/brave-stack/backup/backup.env`
+- **`BACKUP_PATHS` там полнее, чем было записано:** все пять каталогов —
+  `data`, `vaultwarden/data`, `ntfy/data`, `uptime-kuma/data`, `wallos/data`.
+  Бэкап идёт ежедневно в 05:00, ~54 МБ, с GPG и чисткой копий старше 14 дней.
+- **`git pull` на этом сервере не пройдёт.** Рабочая копия стоит на июньском
+  коммите, а восемнадцать файлов конфигов лежат рядом **неотслеживаемыми**: git
+  откажется их перезаписать. То есть задокументированный способ обновления на
+  единственном живом сервере не работает — чинится один раз:
+  `git fetch && git stash -u && git reset --hard origin/master` с последующей
+  сверкой `.env` и `backup/backup.env` (они в `.gitignore` и не пострадают).
 - RustDesk крутится со старого compose (host-режим), миграцию на монорепо-раскладку
   откладывали, чтобы не ронять рабочий сервис.
 - Новый сервер поднимать по шагам выше (чистая `brave-stack`-раскладка) — это целевой вид.
